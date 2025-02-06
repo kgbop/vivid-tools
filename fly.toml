@@ -1,0 +1,24 @@
+# fly.toml app configuration file generated for event-processor-broken-pine-9561 on 2024-11-27T11:49:17-05:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+app = 'event-processor-broken-pine-9561'
+primary_region = 'yyz'
+
+[build]
+
+[http_service]
+  internal_port = 3003
+  force_https = true
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+[env]
+  DATABASE_URI = "postgresql://neondb_owner:eK1XU4OaqlLx@ep-curly-darkness-a58tnjy6.us-east-2.aws.neon.tech/neondb?sslmode=require"
+  AWS_ACCESS_KEY_ID = "AKIA5G2VGPUQJ4BH73VM"
+  AWS_SECRET_ACCESS_KEY = "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"
+  AWS_BUCKET_NAME = "tm-mapss"

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Comparison Tool</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>RDM vs Vivid Seats Inventory</h1>
+      </header>
+
+      <div class="input-section">
+        <div class="input-group">
+          <label for="productionId">Production ID:</label>
+          <input
+            type="text"
+            id="productionId"
+            placeholder="Enter Production ID"
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="quantity">Quantity:</label>
+          <input
+            type="number"
+            id="quantity"
+            placeholder="Enter quantity"
+            min="1"
+            value="2"
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="rdmData">RDM Inventory Data:</label>
+          <textarea
+            id="rdmData"
+            placeholder="Paste RDM inventory JSON data here"
+          ></textarea>
+        </div>
+
+        <div class="input-group">
+          <label for="vividData">Vivid Seats Inventory Data (JSON):</label>
+          <textarea
+            id="vividData"
+            rows="10"
+            placeholder="Paste Vivid Seats inventory JSON data here"
+          ></textarea>
+        </div>
+
+        <button id="compareButton">Compare Prices</button>
+      </div>
+
+      <div class="results-section">
+        <div class="loading" id="loading" style="display: none">
+          <div class="spinner"></div>
+          <p>Fetching data...</p>
+        </div>
+
+        <div class="comparison-results" id="comparisonResults">
+          <!-- Results will be populated here -->
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

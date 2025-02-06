@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Manager</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .event-form {
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      input[type="text"],
+      input[type="url"],
+      input[type="datetime-local"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+
+      button {
+        background: #a4b4c4;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+
+      .event-list {
+        border: 1px solid #ddd;
+      }
+
+      .event-item {
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .event-details {
+        flex-grow: 1;
+      }
+
+      .notification-btn {
+        background: #28a745;
+      }
+
+      .notification-btn.disabled {
+        background: #dc3545;
+      }
+
+      .layout-label {
+        color: #28a745;
+        font-size: 0.8em;
+        margin-left: 10px;
+      }
+
+      .layout-badge {
+        background: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        margin-left: 10px;
+      }
+
+      .view-layout-btn {
+        background: #a4b4c4;
+      }
+
+      .reset-layouts-btn {
+        background: #dc3545;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Event Manager</h1>
+
+    <button onclick="toggleForm()">Add New Event</button>
+    <button onclick="resetLayouts()" class="reset-layouts-btn">
+      Reset All Layouts
+    </button>
+
+    <div class="event-form">
+      <h2>Add New Event</h2>
+      <form id="eventForm">
+        <div class="form-group">
+          <label for="external_event_id">External Event ID</label>
+          <input type="text" id="external_event_id" required />
+        </div>
+        <div class="form-group">
+          <label for="external_event_name">Event Name</label>
+          <input type="text" id="external_event_name" required />
+        </div>
+        <div class="form-group">
+          <label for="external_event_url">Event URL</label>
+          <input type="url" id="external_event_url" required />
+        </div>
+        <div class="form-group">
+          <label for="venue_name">Venue Name</label>
+          <input type="text" id="venue_name" required />
+        </div>
+        <div class="form-group">
+          <label for="city">City</label>
+          <input type="text" id="city" required />
+        </div>
+        <div class="form-group">
+          <label for="state">State</label>
+          <input type="text" id="state" required />
+        </div>
+        <div class="form-group">
+          <label for="event_date">Event Date</label>
+          <input type="datetime-local" id="event_date" required />
+        </div>
+        <button type="submit">Add Event</button>
+      </form>
+    </div>
+
+    <div id="eventList" class="event-list"></div>
+
+    <script>
+      function toggleForm() {
+        const form = document.querySelector(".event-form");
+        form.style.display = form.style.display === "none" ? "block" : "none";
+      }
+
+      async function resetLayouts() {
+        if (
+          confirm(
+            "Are you sure you want to reset all layouts? This cannot be undone."
+          )
+        ) {
+          await fetch("/api/reset-layouts", {
+            method: "POST",
+          });
+          loadEvents();
+        }
+      }
+
+      // Load events
+      async function loadEvents() {
+        const response = await fetch("/api/events");
+        const events = await response.json();
+
+        const eventList = document.getElementById("eventList");
+        eventList.innerHTML = "";
+
+        events.forEach((event) => {
+          const eventElement = document.createElement("div");
+          eventElement.className = "event-item";
+          eventElement.onclick = () =>
+            window.open(event.external_event_url, "_blank");
+
+          const notificationBtn = document.createElement("button");
+          notificationBtn.className = `notification-btn ${
+            !event.notification_enabled ? "disabled" : ""
+          }`;
+          notificationBtn.textContent = event.notification_enabled
+            ? "Notifications On"
+            : "Notifications Off";
+          notificationBtn.onclick = (e) => {
+            e.stopPropagation();
+            updateNotification(event.id, !event.notification_enabled);
+            notificationBtn.textContent = !event.notification_enabled
+              ? "Notifications On"
+              : "Notifications Off";
+            notificationBtn.classList.toggle("disabled");
+          };
+
+          const details = document.createElement("div");
+          details.className = "event-details";
+          details.innerHTML = `
+                    <h3>${event.external_event_name}</h3>
+                    <p>ID: ${event.external_event_id}</p>
+                    <p>${event.venue_name}, ${event.city}, ${event.state}</p>
+                    <p>Date: ${new Date(event.event_date).toLocaleString()}</p>
+                `;
+
+          eventElement.appendChild(details);
+          eventElement.appendChild(notificationBtn);
+
+          if (event.s3_image_path) {
+            const viewLayoutBtn = document.createElement("button");
+            viewLayoutBtn.className = "view-layout-btn";
+            viewLayoutBtn.textContent = "View Layout";
+            viewLayoutBtn.onclick = (e) => {
+              e.stopPropagation();
+              window.open(
+                `https://tm-mapss.s3.us-east-2.amazonaws.com/${event.s3_image_path}`,
+                "_blank"
+              );
+            };
+            eventElement.appendChild(viewLayoutBtn);
+          } else {
+            const layoutBadge = document.createElement("span");
+            layoutBadge.className = "layout-badge";
+            layoutBadge.textContent = "No Layout Available";
+            eventElement.appendChild(layoutBadge);
+          }
+
+          eventList.appendChild(eventElement);
+        });
+      }
+
+      // Add new event
+      document.getElementById("eventForm").onsubmit = async (e) => {
+        e.preventDefault();
+
+        const formData = {
+          external_event_id: document.getElementById("external_event_id").value,
+          external_event_name: document.getElementById("external_event_name")
+            .value,
+          external_event_url:
+            document.getElementById("external_event_url").value,
+          venue_name: document.getElementById("venue_name").value,
+          city: document.getElementById("city").value,
+          state: document.getElementById("state").value,
+          event_date: document.getElementById("event_date").value,
+          notification_enabled: false,
+        };
+
+        await fetch("/api/events", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+
+        e.target.reset();
+        toggleForm();
+        loadEvents();
+      };
+
+      // Update notification setting
+      async function updateNotification(id, enabled) {
+        await fetch(`/api/events/${id}/notification`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ notification_enabled: enabled }),
+        });
+      }
+
+      // Initial load
+      loadEvents();
+    </script>
+  </body>
+</html>
