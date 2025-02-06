@@ -16,9 +16,3 @@ primary_region = 'yyz'
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
-
-[env]
-  DATABASE_URI = "postgresql://neondb_owner:eK1XU4OaqlLx@ep-curly-darkness-a58tnjy6.us-east-2.aws.neon.tech/neondb?sslmode=require"
-  AWS_ACCESS_KEY_ID = "AKIA5G2VGPUQJ4BH73VM"
-  AWS_SECRET_ACCESS_KEY = "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"
-  AWS_BUCKET_NAME = "tm-mapss"
