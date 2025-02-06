@@ -3,9 +3,7 @@ const s3Service = require("./s3Service");
 const SlackNotify = require("slack-notify");
 const axios = require("axios");
 
-const MY_SLACK_WEBHOOK_URL =
-  "https://hooks.slack.com/services/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";
-const slack = SlackNotify(MY_SLACK_WEBHOOK_URL);
+const slack = SlackNotify(process.env.MY_SLACK_WEBHOOK_URL);
 
 async function processEvents(pool) {
   const events = await pool.query(
